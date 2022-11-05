@@ -1,0 +1,9 @@
+FROM bash:5.1
+RUN apk add git jq curl coreutils gettext tzdata
+ENV SCALE_DOWN_POD_COUNT 1
+ENV SCALE_UP_POD_COUNT 2
+ENV SCALE_UP_TIME 08
+ENV SCALE_DOWN_TIME 05
+COPY scaler.sh scaler.sh
+ENTRYPOINT ["./scaler.sh"] 
+CMD ["$SCALE_DOWN_POD_COUNT", "$SCALE_UP_POD_COUNT", "$SCALE_UP_TIME", "$SCALE_DOWN_TIME"]

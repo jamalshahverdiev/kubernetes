@@ -1,0 +1,69 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scheduled-autoscaler-service-account
+  namespace: default
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: schedule-autoscaler-role
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - delete
+      - watch
+  - apiGroups: ["apps","extensions"]
+    resources:
+      - deployments
+      - deployments/scale
+      - deployments/status
+      - replicasets
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+      - scale
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: schedule-autoscaler-role-binding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: scheduled-autoscaler-service-account
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: schedule-autoscaler-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: argoimagescaler
+  namespace: default
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: scheduled-autoscaler-service-account
+          containers:
+          - name: argoimagescaler
+            image: ${image_with_version}
+            envFrom:
+            - secretRef:
+                name: argoimagescaler
+          restartPolicy: OnFailure
