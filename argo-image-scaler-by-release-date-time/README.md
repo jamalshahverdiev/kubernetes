@@ -14,7 +14,10 @@
 
 ```bash
 $ export image_with_version='us-central1-docker.pkg.dev/company-images/company/argoimagescaler:v22'
-$ docker build -t $image_with_version . && docker push $image_with_version 
-$ cat manifests/scaler-manifest.yaml | envsubst > scaler-manifest.yaml 
+$ docker build -t $image_with_version . && docker push $image_with_version
+$ kubectl apply -f manifests/secret.yaml
+$ cat manifests/scaler-manifest.yaml | envsubst > scaler-manifest.yaml
 $ kubectl apply -f scaler-manifest.yaml && rm -rf scaler-manifest.yaml
 ```
+
+**Note:** Don't forget change base64 encoded values inside of the `manifests/secret.yaml` file to your own `date/time` and scale `Up/Down` count needs.
